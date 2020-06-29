@@ -1,8 +1,0 @@
-argparse
-matplotlib
-nibabel
-numpy
-scipy
-scikit-image
-sklearn
-statsmodels
