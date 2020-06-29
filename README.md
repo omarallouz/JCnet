@@ -12,5 +12,9 @@ The basic code structure was adopted from the following [source](https://www.nit
 2. [Feature pyramid network-ResNet50 (with bottleneck ResNet modules)](https://arxiv.org/abs/1612.03144)
 3. [Panoptic feature pyramid network-ResNet50 (with preactivated ResNet modules)](https://arxiv.org/abs/1901.02446)
 
-<font size="+5">**Prerequisites before running JCnet**</font>
-
+**Prerequisites before running JCnet**
+*Pre-processing:*
+A few standard MRI preprocessing steps are necessary before training or testing a JCnet model:
+1. Bias field correction - can use either [N4 bias correction](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855/) or [MICO](https://www.sciencedirect.com/science/article/abs/pii/S0730725X14000927)
+2. Skull-stripping - we recommend using the [MONSTR skull-stripping algorithm](https://pubmed.ncbi.nlm.nih.gov/27864083/) in PML cases, which is publicly available and can be found [here](https://www.nitrc.org/projects/monstr)
+3. Co-registration of different MRI channels or contrasts (i.e. T1-weighted, fluid-attenuated inversion recovery, T2-weighted, and proton density images)
