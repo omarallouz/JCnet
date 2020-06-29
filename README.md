@@ -13,6 +13,7 @@ The basic code structure was adopted from the following [source](https://www.nit
 3. [Panoptic feature pyramid network-ResNet50 (with preactivated ResNet modules)](https://arxiv.org/abs/1901.02446)
 
 **Prerequisites before running JCnet**
+
 *Pre-processing:*
 A few standard MRI preprocessing steps are necessary before training or testing a JCnet model:
 1. Bias field correction - can use either [N4 bias correction](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855/) or [MICO](https://www.sciencedirect.com/science/article/abs/pii/S0730725X14000927)
