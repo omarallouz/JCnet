@@ -33,4 +33,4 @@ GPU: recommend a dedicated graphics card with at least 8GB of VRAM (ex. NVIDIA R
 1. Python v3.6
 2. Keras v2.2.4
 3. Tensorflow GPU version v1.13+ (TF v2 is not currently supported)
-4. Several open source python packages, please see
+4. Several open source python packages, please see 
