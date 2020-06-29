@@ -5,10 +5,11 @@ This is a deep learning workflow for Progressive Multifocal Leukoencephalopathy 
 
 This work was developed by the Translation Neuroradiology Section (TNS) of the National Institute of Neurological Disorders and Stroke (NINDS), in collaboration with colleagues at the National Institute of Mental Health, Henry Jackson Foundation, and Radiology department at the National Institutes of Health. This software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
 
-If this repository is helpful for your research, please cite the following article: *to be updated*
+If this repository is helpful for your research, please cite the following articles:
+*to be updated*
 
 ![JCnet](/assets/Figure-2.jpg)
-The basic code structure was adopted from the following [source](https://www.nitrc.org/projects/flexconn/) (https://arxiv.org/abs/1803.09172) with several notable changes. We have created two tailored scripts for brain parechymal extraction and lesion segmentation training. We have also introduced improvements in training/validation split which is now undertaken at the atlas level to remove patch sampling overlap effects, included support for Tensorboard logging, and generation of training/validation accuracy and loss graphs automatically at the end of training. 
+The basic code structure was adopted from the following [source](https://www.nitrc.org/projects/flexconn/) (https://arxiv.org/abs/1803.09172) with several notable changes. We have created two tailored scripts for brain parechymal extraction and lesion segmentation training. We have also introduced several improvements in training/validation split which is now undertaken at the atlas level to remove patch sampling overlap effects, included support for Tensorboard logging, and generation of training/validation accuracy and loss graphs automatically at the end of model training. 
 For the testing implementation, we fixed a previous bug with image padding, added a new 4D image padding function, and replaced the 'slice-by-slice' format previously used, with a new method to generate model predictions on unseen images using a moving 3D window, equal to the training 3D patch size, serially across the entire image volume to allow higher resolution images to fit into available GPU memory. In addition, the method now offers support for 3 different trainable network acrchitechures:
 1. [3D Unet](https://arxiv.org/abs/1606.06650)
 2. [Feature pyramid network-ResNet50 (with bottleneck ResNet modules)](https://arxiv.org/abs/1612.03144)
@@ -26,7 +27,7 @@ A few standard MRI preprocessing steps are necessary before training or testing 
 Operating System: Linux
 CPU Number/Speed: we recommend using a processor with at least 8 cores, 2GHz speed, and multithreading capability
 RAM: 64+GB recommended (depending on the size of the training dataset and maximum number of training patches per subject)
-GPU: recommend a dedicated graphics card with at least 8GB of VRAM (ex. NVIDIA RTX 2080 Ti, Titan X, or v100 models)
+GPU: recommend a dedicated graphics card with at least 8GB of VRAM (ex. NVIDIA RTX 2080 Ti, Titan X, or v100 models). If our current pre-trained models do not fit into GPU memory during testing, we recommend downscaling the network parameters (batch size, base filters, or patch size in this order). These models can be provided upon request.
 
 *Software Requirements:*
 1. Python v3.6
