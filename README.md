@@ -10,8 +10,8 @@ If this repository is helpful for your research, please cite the following artic
 *to be updated*
 
 ![JCnet](/assets/Figure-2.jpg)
-The basic code structure was adopted from the following [source](https://www.nitrc.org/projects/flexconn/) (https://arxiv.org/abs/1803.09172) with several notable changes. We have created two tailored scripts for brain parechymal extraction and lesion segmentation training. We have also introduced several improvements in training/validation split which is now undertaken at the atlas level to remove patch sampling overlap effects, included support for Tensorboard logging, and generation of training/validation accuracy and loss graphs automatically at the end of model training. 
-For the testing implementation, we fixed a previous bug with image padding, added a new 4D image padding function, and replaced the 'slice-by-slice' format previously used, with a new method to generate model predictions on unseen images using a moving 3D window, equal to the training 3D patch size, serially across the entire image volume to allow higher resolution images to fit into available GPU memory. In addition, the method now offers support for 3 different trainable network acrchitechures:
+The basic code skeleton was adopted from the following [source](https://www.nitrc.org/projects/flexconn/) (https://arxiv.org/abs/1803.09172) with several notable changes. We have created two tailored scripts for PML brain parechymal extraction and lesion segmentation training. We have also introduced several improvements in training/validation split which is now undertaken at the atlas level to remove patch sampling overlap effects, included support for Tensorboard logging, and generation of training/validation accuracy and loss graphs automatically at the end of model training. 
+For the testing implementation, we fixed a previous bug with image padding, added a new 4D image padding function, and replaced the 'slice-by-slice' format previously used, with a new method to generate model predictions on unseen images using a moving 3D window applied serially across the entire image volume to allow higher resolution images to fit into available GPU memory. In addition, the method now offers support for 3 different trainable network acrchitechures:
 1. [3D Unet](https://arxiv.org/abs/1606.06650)
 2. [Feature pyramid network-ResNet50 (with bottleneck ResNet modules)](https://arxiv.org/abs/1612.03144)
 3. [Panoptic feature pyramid network-ResNet50 (with preactivated ResNet modules)](https://arxiv.org/abs/1901.02446)
@@ -39,4 +39,15 @@ To install python dependency packages, you can point your pip manager to the tex
 > pip3 install -r requirements.txt 
 
 ### Training call examples
+*Brain Extraction*:
+> python JCnet_BrainExtraction_Train_v2.py --atlasdir /path/to/atlas/dir/ --natlas 31 --psize 64 64 64 --maxpatch 1000 --batchsize 8 --basefilters 32 --modalities T1 FL T2 PD --epoch 50 --outdir /path/to/output/dir/to/save/models/ --save 1 --gpuids 0 1 2 3 --loss focal --model FPN
 
+*Lesion Segmentation*:
+> python JCnet_LesionSeg_Train_v2.py --atlasdir /path/to/atlas/dir/ --natlas 31 --psize 64 64 64 --maxpatch 1000 --batchsize 8 --basefilters 32 --modalities T1 FL T2 PD --epoch 50 --outdir /path/to/output/dir/to/save/models/ --save 1 --gpuids 0 1 2 3 --loss focal --model FPN
+
+### Testing call examples
+*Brain Extraction*:
+> python JCnet_BrainExtraction_Test_v2.py --models /path/to/model/files/ending/in/*Orient012*.h5 /path/to/model/files/ending/in/*Orient120*.h5 /path/to/model/files/ending/in/*Orient201*.h5  --images /path/to/T1/niftifile/*.nii.gz /path/to/FL/niftifile/*.nii.gz /path/to/T2/niftifile/*.nii.gz /path/to/PD/niftifile/*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.5
+
+*Lesion Segmentation*:
+> python JCnet_LesionSeg_Test_v2.py --models /path/to/model/files/ending/in/*Orient012*.h5 /path/to/model/files/ending/in/*Orient120*.h5 /path/to/model/files/ending/in/*Orient201*.h5  --images /path/to/T1/niftifile/*.nii.gz /path/to/FL/niftifile/*.nii.gz /path/to/T2/niftifile/*.nii.gz /path/to/PD/niftifile/*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.35
