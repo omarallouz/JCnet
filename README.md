@@ -47,7 +47,7 @@ To install python dependency packages, you can point your pip manager to the tex
 
 ### Testing call examples
 *Brain Extraction*:
-> python JCnet_BrainExtraction_Test_v2.py --models /path/to/model/files/ending/in/"*"Orient012"*".h5 /path/to/model/files/ending/in/"*"Orient120"*".h5 /path/to/model/files/ending/in/"*"Orient201"*".h5  --images /path/to/T1/niftifile/"*".nii.gz /path/to/FL/niftifile/"*".nii.gz /path/to/T2/niftifile/"*".nii.gz /path/to/PD/niftifile/"*".nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.5
+> python JCnet_BrainExtraction_Test_v2.py --models /path/to/model/files/containing/in/\*Orient012\*.h5 /path/to/model/files/ending/in/\*Orient120\*.h5 /path/to/model/files/ending/in/\*Orient201\*.h5  --images /path/to/T1/niftifile/\*.nii.gz /path/to/FL/niftifile/\*.nii.gz /path/to/T2/niftifile/\*.nii.gz /path/to/PD/niftifile/\*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.5
 
 *Lesion Segmentation*:
-> python JCnet_LesionSeg_Test_v2.py --models /path/to/model/files/ending/in/*Orient012*.h5 /path/to/model/files/ending/in/*Orient120*.h5 /path/to/model/files/ending/in/*Orient201*.h5  --images /path/to/T1/niftifile/*.nii.gz /path/to/FL/niftifile/*.nii.gz /path/to/T2/niftifile/*.nii.gz /path/to/PD/niftifile/*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.35
+> python JCnet_LesionSeg_Test_v2.py --models /path/to/model/files/containing/in/\*Orient012\*.h5 /path/to/model/files/ending/in/\*Orient120\*.h5 /path/to/model/files/ending/in/\*Orient201\*.h5  --images /path/to/T1/niftifile/\*.nii.gz /path/to/FL/niftifile/\*.nii.gz /path/to/T2/niftifile/\*.nii.gz /path/to/PD/niftifile/\*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.35
