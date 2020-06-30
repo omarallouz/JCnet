@@ -36,9 +36,10 @@ A few standard MRI preprocessing steps are necessary before training or testing 
 2. Keras v2.2.4
 3. Tensorflow GPU version v1.13+ (TF v2 is not currently supported)
 4. Several open source python packages, please see [requirements.txt](https://github.com/omarallouz/JCnet/blob/master/requirements.txt)
-To install python dependency packages, you can point your pip manager to the text file as follows:
-> pip3 install -r requirements.txt 
-
+To install python dependency packages, you can point your pip manager using the terminal to the text file as follows:
+```
+pip3 install -r requirements.txt 
+```
 ### Training call examples
 ```
 # Run Brain Extraction:
