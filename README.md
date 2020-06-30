@@ -40,15 +40,20 @@ To install python dependency packages, you can point your pip manager to the tex
 > pip3 install -r requirements.txt 
 
 ### Training call examples
-*Brain Extraction*:
-> python JCnet_BrainExtraction_Train_v2.py --atlasdir /path/to/atlas/dir/ --natlas 31 --psize 64 64 64 --maxpatch 1000 --batchsize 8 --basefilters 32 --modalities T1 FL T2 PD --epoch 50 --outdir /path/to/output/dir/to/save/models/ --save 1 --gpuids 0 1 2 3 --loss focal --model FPN
-
-*Lesion Segmentation*:
-> python JCnet_LesionSeg_Train_v2.py --atlasdir /path/to/atlas/dir/ --natlas 31 --psize 64 64 64 --maxpatch 1000 --batchsize 8 --basefilters 32 --modalities T1 FL T2 PD --epoch 50 --outdir /path/to/output/dir/to/save/models/ --save 1 --gpuids 0 1 2 3 --loss focal --model FPN
-
+```
+# Run Brain Extraction:
+python JCnet_BrainExtraction_Train_v2.py --atlasdir /path/to/atlas/dir/ --natlas 31 --psize 64 64 64 --maxpatch 1000 --batchsize 8 --basefilters 32 --modalities T1 FL T2 PD --epoch 50 --outdir /path/to/output/dir/to/save/models/ --save 1 --gpuids 0 1 2 3 --loss focal --model FPN
+```
+```
+# Lesion Segmentation:
+python JCnet_LesionSeg_Train_v2.py --atlasdir /path/to/atlas/dir/ --natlas 31 --psize 64 64 64 --maxpatch 1000 --batchsize 8 --basefilters 32 --modalities T1 FL T2 PD --epoch 50 --outdir /path/to/output/dir/to/save/models/ --save 1 --gpuids 0 1 2 3 --loss focal --model FPN
+```
 ### Testing call examples
-*Brain Extraction*:
-> python JCnet_BrainExtraction_Test_v2.py --models /path/to/model/files/containing/in/\*Orient012\*.h5 /path/to/model/files/ending/in/\*Orient120\*.h5 /path/to/model/files/ending/in/\*Orient201\*.h5  --images /path/to/T1/niftifile/\*.nii.gz /path/to/FL/niftifile/\*.nii.gz /path/to/T2/niftifile/\*.nii.gz /path/to/PD/niftifile/\*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.5
-
-*Lesion Segmentation*:
-> python JCnet_LesionSeg_Test_v2.py --models /path/to/model/files/containing/in/\*Orient012\*.h5 /path/to/model/files/ending/in/\*Orient120\*.h5 /path/to/model/files/ending/in/\*Orient201\*.h5  --images /path/to/T1/niftifile/\*.nii.gz /path/to/FL/niftifile/\*.nii.gz /path/to/T2/niftifile/\*.nii.gz /path/to/PD/niftifile/\*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.35
+```
+# Brain Extraction:
+python JCnet_BrainExtraction_Test_v2.py --models /path/to/model/files/containing/in/\*Orient012\*.h5 /path/to/model/files/ending/in/\*Orient120\*.h5 /path/to/model/files/ending/in/\*Orient201\*.h5  --images /path/to/T1/niftifile/\*.nii.gz /path/to/FL/niftifile/\*.nii.gz /path/to/T2/niftifile/\*.nii.gz /path/to/PD/niftifile/\*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.5
+```
+```
+# Lesion Segmentation:
+python JCnet_LesionSeg_Test_v2.py --models /path/to/model/files/containing/in/\*Orient012\*.h5 /path/to/model/files/ending/in/\*Orient120\*.h5 /path/to/model/files/ending/in/\*Orient201\*.h5  --images /path/to/T1/niftifile/\*.nii.gz /path/to/FL/niftifile/\*.nii.gz /path/to/T2/niftifile/\*.nii.gz /path/to/PD/niftifile/\*.nii.gz --modalities T1 FL T2 PD --psize 64 64 64 --outdir /path/to/output/dir/to/save/results/ --threshold 0.35
+```
