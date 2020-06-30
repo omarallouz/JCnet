@@ -10,6 +10,7 @@ If this repository is helpful for your research, please cite the following artic
 *to be updated*
 
 ![JCnet](/assets/Figure-2.jpg)
+
 The basic code skeleton was adopted from the following [source](https://www.nitrc.org/projects/flexconn/) (https://arxiv.org/abs/1803.09172) with several notable changes. We have created two tailored scripts for PML brain parechymal extraction and lesion segmentation training. We have also introduced improvements in training/validation split which is now undertaken at the atlas level to remove patch sampling overlap effects, included support for Tensorboard logging, and generation of training/validation accuracy and loss graphs automatically at the end of model training. 
 For the testing implementation, we fixed a previous bug with image padding, added a new 4D image padding function, and replaced the 'slice-by-slice' format previously used, with a new method to generate model predictions on unseen images using a moving 3D window applied serially across the entire image volume to allow higher resolution images to fit into available GPU memory. In addition, the method now offers support for 3 different trainable network acrchitechures:
 1. [3D Unet](https://arxiv.org/abs/1606.06650)
