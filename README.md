@@ -4,7 +4,7 @@ This is a deep learning workflow for Progressive Multifocal Leukoencephalopathy 
 
 ![TNS Logo](/assets/tns.jpg)
 
-This work was developed at the Translation Neuroradiology Section (TNS) of the National Institute of Neurological Disorders and Stroke (NINDS), in collaboration with colleagues at the National Institute of Mental Health, and Henry Jackson Foundation at the National Institutes of Health. This software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
+This work was conducted at the Translation Neuroradiology Section (TNS) of the National Institute of Neurological Disorders and Stroke (NINDS), in collaboration with colleagues at the National Institute of Mental Health, and Henry Jackson Foundation at the National Institutes of Health. This software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
 
 If this repository is helpful for your research, please cite the following articles:
 *to be updated*
