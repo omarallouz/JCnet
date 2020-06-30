@@ -4,7 +4,7 @@ This is a deep learning workflow for Progressive Multifocal Leukoencephalopathy 
 
 ![TNS Logo](/assets/tns.jpg)
 
-This work was developed by the Translation Neuroradiology Section (TNS) of the National Institute of Neurological Disorders and Stroke (NINDS), in collaboration with colleagues at the National Institute of Mental Health, and Henry Jackson Foundation at the National Institutes of Health. This software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
+This work was developed at the Translation Neuroradiology Section (TNS) of the National Institute of Neurological Disorders and Stroke (NINDS), in collaboration with colleagues at the National Institute of Mental Health, and Henry Jackson Foundation at the National Institutes of Health. This software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
 
 If this repository is helpful for your research, please cite the following articles:
 *to be updated*
@@ -23,7 +23,8 @@ For the testing implementation, we fixed a previous bug with image padding for d
 A few standard MRI preprocessing steps are necessary before training or testing a JCnet model:
 1. Bias field correction - can use either [N4 bias correction](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855/) or [MICO](https://www.sciencedirect.com/science/article/abs/pii/S0730725X14000927)
 2. Skull-stripping - we recommend using the [MONSTR skull-stripping algorithm](https://pubmed.ncbi.nlm.nih.gov/27864083/) in PML cases, which is publicly available and can be found [here](https://www.nitrc.org/projects/monstr)
-3. Co-registration of different MRI channels or contrasts (i.e. T1-weighted, fluid-attenuated inversion recovery, T2-weighted, and proton density images)
+3. Transformation to the standard MNI-ICBM 152 atlas space, which is available for download [here](http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009)
+4. Co-registration of different MRI channels or contrasts (i.e. T1-weighted, fluid-attenuated inversion recovery, T2-weighted, and proton density images)
 
 ### Hardware Requirements:
 1. Operating System: Linux
