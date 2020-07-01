@@ -18,6 +18,7 @@ from keras.layers import (AveragePooling2D, AveragePooling3D, Conv2D, Conv3D, Ma
                           Lambda, Conv2DTranspose, Conv3DTranspose, UpSampling3D, UpSampling2D, BatchNormalization, Activation, Add)
 from keras.optimizers import Adam
 from keras.layers.merge import add
+from keras.regularizers import l2
 from scipy import ndimage
 from keras.models import load_model
 import sys
@@ -267,56 +268,6 @@ def get_patches(vol4d, mask, opt, image_patches, mask_patches, count):
     return num_patch_for_subj
     # return image_patches, mask_patches
 
-def get_model_2d(kwargs):
-    base_filters = kwargs['base_filters']
-    gpus = kwargs['numgpu']
-    loss = kwargs['loss']
-    numchannel = int(len(kwargs['modalities']))
-    inputs = Input((None, None, int(numchannel)))
-    if kwargs['model'] == 'inception':
-        conv1 = Conv2D(base_filters * 8, (3, 3), activation='relu', padding='same', strides=(1, 1))(inputs)
-        conv2 = Conv2D(base_filters * 8, (3, 3), activation='relu', padding='same', strides=(1, 1))(conv1)
-
-        inception1 = Inception2d(conv2, base_filters)
-        inception2 = Inception2d(inception1, base_filters)
-        inception3 = Inception2d(inception2, base_filters)
-
-        convconcat1 = Conv2D(base_filters * 4, (3, 3), activation='relu', padding='same', strides=(1, 1))(inception3)
-        final = Conv2D(base_filters * 2, (3, 3), activation='relu', padding='same', strides=(1, 1))(convconcat1)
-    elif kwargs['model'] == 'unet':
-        final = Unet2D(inputs, base_filters)
-    elif kwargs['model'] == 'vnet':
-        final = Vnet2D(inputs, base_filters)
-    elif kwargs['model'] == 'fpn':
-        f1,f2,f3,f4,f5 = FPN2D(inputs, base_filters)
-    elif kwargs['model'] == 'densenet':
-        final = DenseNet2D(inputs,base_filters)
-    else:
-        sys.exit('Model must be inception/unet/vnet/densenet/fpn.')
-
-    if kwargs['model'] != 'fpn':
-        if loss == 'bce'  or loss == 'dice' or loss == 'focal':
-            final = Conv2D(1, (3, 3), activation='sigmoid', padding='same', strides=(1, 1))(final)
-        else:
-            final = Conv2D(1, (3, 3), activation='relu', padding='same', strides=(1, 1))(final)
-        model = Model(inputs=inputs, outputs=final,name='some_unique_name')
-    else:
-        if loss == 'bce'  or loss == 'dice' or loss == 'focal':
-            f1 = Conv2D(1, (3, 3), activation='sigmoid', padding='same', strides=(1, 1), name='Level1')(f1)
-            f2 = Conv2D(1, (3, 3), activation='sigmoid', padding='same', strides=(1, 1), name='Level2')(f2)
-            f3 = Conv2D(1, (3, 3), activation='sigmoid', padding='same', strides=(1, 1), name='Level3')(f3)
-            f4 = Conv2D(1, (3, 3), activation='sigmoid', padding='same', strides=(1, 1), name='Level4')(f4)
-            f5 = Conv2D(1, (3, 3), activation='sigmoid', padding='same', strides=(1, 1), name='Level5')(f5)
-        else:
-            f1 = Conv2D(1, (3, 3), activation='relu', padding='same', strides=(1, 1))(f1)
-            f2 = Conv2D(1, (3, 3), activation='relu', padding='same', strides=(1, 1))(f2)
-            f3 = Conv2D(1, (3, 3), activation='relu', padding='same', strides=(1, 1))(f3)
-            f4 = Conv2D(1, (3, 3), activation='relu', padding='same', strides=(1, 1))(f4)
-            f5 = Conv2D(1, (3, 3), activation='relu', padding='same', strides=(1, 1))(f5)
-
-        model = Model(inputs=inputs, outputs=[f1,f2,f3,f4,f5],name='some_unique_name')
-    return model
-
 def get_model_3d(kwargs):
     base_filters = kwargs['base_filters']
     gpus = kwargs['numgpu']
@@ -336,7 +287,8 @@ def get_model_3d(kwargs):
     elif kwargs['model'] == 'vnet':
         final = Vnet3D(inputs, base_filters)
     elif kwargs['model'] == 'fpn':
-        f1, f2, f3, f4, _ = FPN3D(inputs, base_filters)
+        reg = 0.0001
+        f1, f2, f3, f4, _ = FPN3D(inputs, base_filters, reg)
     elif kwargs['model'] == 'densenet':
         final = DenseNet3D(inputs,base_filters)
     else:
@@ -356,18 +308,18 @@ def get_model_3d(kwargs):
             f4 = Activation('relu')(f4)
             f4 = UpSampling3D(size=(2, 2, 2), name='F4_U1')(f4)
             # U2
-            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f4)
+            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f4)
             f4 = BatchNormalization(axis=-1)(f4)
             f4 = Activation('relu')(f4)
             f4 = UpSampling3D(size=(2, 2, 2), name='F4_U2')(f4)
             # U3
-            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f4)
+            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f4)
             f4 = BatchNormalization(axis=-1)(f4)
             f4 = Activation('relu')(f4)
             f4 = UpSampling3D(size=(2, 2, 2), name='F4_U3')(f4)
 
             # Prepare
-            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f4)
+            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f4)
             f4 = BatchNormalization(axis=-1)(f4)
             f4 = Activation('relu')(f4)
 
@@ -377,12 +329,12 @@ def get_model_3d(kwargs):
             f3 = Activation('relu')(f3)
             f3 = UpSampling3D(size=(2, 2, 2), name='F3_U1')(f3)
             # U2
-            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f3)
+            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f3)
             f3 = BatchNormalization(axis=-1)(f3)
             f3 = Activation('relu')(f3)
             f3 = UpSampling3D(size=(2, 2, 2), name='F3_U2')(f3)
             # Prepare
-            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f3)
+            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f3)
             f3 = BatchNormalization(axis=-1)(f3)
             f3 = Activation('relu')(f3)
 
@@ -392,7 +344,7 @@ def get_model_3d(kwargs):
             f2 = Activation('relu')(f2)
             f2 = UpSampling3D(size=(2, 2, 2), name='F2_U1')(f2)
             # Prepare
-            f2 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f2)
+            f2 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f2)
             f2 = BatchNormalization(axis=-1)(f2)
             f2 = Activation('relu')(f2)
 
@@ -404,7 +356,7 @@ def get_model_3d(kwargs):
             f2 = Add()([f3, f2])
             f1 = Add()([f2, f1])
 
-            f1 = Conv3D(base_filters*4, (3, 3, 3),  padding='same', strides=(1,1,1))(f1)
+            f1 = Conv3D(base_filters*4, (3, 3, 3),  padding='same', strides=(1,1,1), kernel_regularizer=l2(reg))(f1)
             f1 = BatchNormalization(axis=-1)(f1)
             f1 = Activation('relu')(f1)
             final = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1), name='Level1')(f1)
@@ -417,7 +369,6 @@ def get_model_3d(kwargs):
 
         model = Model(inputs=inputs, outputs=final,name='some_unique_name')
     #print(model.summary())
-    #plot_model(model, to_file='/home/allouzioa/Python_learning/JCnet/FPNv2.png', show_shapes=True, show_layer_names=True)
     return model
 
 def check_nifti_filepath(directory, file_prefix):
@@ -456,9 +407,9 @@ def main(**kwargs):
     loss = kwargs['loss']
     r = opt['oversample'] # ratio between positive and negative patches
     if kwargs['model'] != 'fpn':
-        print('Approximate memory required = %.1f GB' %(np.prod(kwargs['patchsize'])*(nummodal+1)*4.0*(r+1)*f/(1024**3)))
+        print('Approximate memory required = %.1f GB' %(np.prod(kwargs['patchsize'])*(nummodal+1)*4.0*(r+1)*(f+v)/(1024**3)))
     else:
-        x=np.prod(kwargs['patchsize'])*(nummodal+1)*4.0*(r+1)*f/(1024**3)
+        x=np.prod(kwargs['patchsize'])*(nummodal+1)*4.0*(r+1)*(f+v)/(1024**3)
         if len(kwargs['patchsize'])==2:
             x = x + x/4.0 + x/16.0
         else:
@@ -505,7 +456,6 @@ def main(**kwargs):
             mask_patches2 = np.zeros(dim2, dtype=np.float32)
             mask_patches3 = np.zeros(dim3, dtype=np.float32)
             mask_patches4 = np.zeros(dim4, dtype=np.float32)
-
 
     if len(kwargs['patchsize']) == 2:
         opt2 = copy.deepcopy(kwargs)
@@ -626,7 +576,7 @@ def main(**kwargs):
                 num_patch_for_subj = get_patches(vol4d, mask, kwargs, val_image_patches, val_mask_patches, val_patch_count)
                 print('Atlas %d : indices [%d,%d)' % (i + 1, val_patch_count, val_patch_count + num_patch_for_subj))
                 val_patch_count += num_patch_for_subj
-            
+
             #num_patches = min(kwargs['max_patches'], mask.sum())
             #num_patches = int((r+1)*num_patches)
             print('-' * 100)
@@ -640,7 +590,7 @@ def main(**kwargs):
                                          period=kwargs['period'], mode='max')] if kwargs['period'] > 0 else None
             dlr = ReduceLROnPlateau(monitor="val_acc", factor=0.5, patience=20,
                                     mode='max', verbose=1, cooldown=1, min_lr=1e-8)
-            tensorboard = TensorBoard(log_dir= kwargs['outdir'] + 'logs')
+            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + '/logs')
             # earlystop = EarlyStopping(monitor='val_acc', min_delta=0.0001, patience=4,
                                       # verbose=1, mode='max')
         elif kwargs['loss'] == 'dice':
@@ -648,7 +598,7 @@ def main(**kwargs):
                                          period=kwargs['period'], mode='max')] if kwargs['period'] > 0 else None
             dlr = ReduceLROnPlateau(monitor="val_dice_coeff", factor=0.5, patience=20,
                                     mode='max', verbose=1, cooldown=1, min_lr=1e-8)
-            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + 'logs')
+            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + '/logs')
             # earlystop = EarlyStopping(monitor='val_dice_coeff', min_delta=0.0001, patience=4,
                                       # verbose=1, mode='max')
         else:
@@ -656,7 +606,7 @@ def main(**kwargs):
                                          period=kwargs['period'], mode='min')] if kwargs['period'] > 0 else None
             dlr = ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=20,
                                     mode='min', verbose=1, cooldown=1, min_lr=1e-8)
-            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + 'logs')
+            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + '/logs')
             # earlystop = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=4,
                                       # verbose=1, mode='min')
 
@@ -781,10 +731,10 @@ if __name__ == '__main__':
     required.add_argument('--natlas', required=True, type=int,
                         help='Number of atlases to be used. The program will pick the first N atlases from the '
                              'atlas directory. The atlas directory must contain at least this many atlas sets.')
-    required.add_argument('--psize', nargs='+', type=int, default=[64, 64],
+    required.add_argument('--psize', nargs='+', type=int, default=[64, 64, 64],
                         help='Patch size, e.g. 32 32 32 (3D) or 64 64 (2D). Patch sizes are separated by space. '
                              'Note that bigger patches (such as 128x128) are possible in 2D models while it is '
-                             'computationally expensive to use more than 32x32x32 patches. Default is [64,64]. '
+                             'computationally expensive to use more than 80x80x80 patches. Default is [64,64,64]. '
                              'For Unet/Vnet, patch sizes must be multiple of 16.')
     required.add_argument('--modalities', required=True, nargs='+',
                         help='A space separated string of input image modalities. This is used to determine the order '
@@ -800,9 +750,9 @@ if __name__ == '__main__':
                         help='Output directory where the trained models are written.')
     # Optional arguments
     optional = parser.add_argument_group('Optional arguments')
-    optional.add_argument('--batchsize', type=int, default=64, required=False,
+    optional.add_argument('--batchsize', type=int, default=32, required=False,
                         help='Mini-batch size to use per iteration. Usually 32-256 works well, '
-                             '64 is used as default. ')
+                             '32 is used as default. ')
     optional.add_argument('--epoch', type=int, default=20, required=False,
                         help='Number of epochs to train. Usually 20-50 works well. Optional argumet, '
                              'if omitted, 20 is used as default. Too large epochs can incur in overfitting.')
@@ -823,11 +773,11 @@ if __name__ == '__main__':
                         help='Sets the base number of filters for the models. 16 is appropriate for 12GB GPUs, where '
                              '8 may be more appropriate for 4GB cards. This value scales all filter banks (increasing '
                              'by 2 for a change from 8->16). This '
-                             'value is abitrary and should be scaled to fit the available RAM and GPU memory.')
-    optional.add_argument('--maxpatches', type=int, default=100000, required=False,
+                             'value is abitrary and should be scaled to fit the available GPU memory.')
+    optional.add_argument('--maxpatches', type=int, default=10000, required=False,
                         help='Maximum number of patches to choose from each atlas. 100000 is the default. This '
                              'is appropriate for 2D patches. 10000 may be more appropriate for 3D patches. This '
-                             'value is abitrary and should be scaled to fit the available RAM and GPU memory.')
+                             'value is abitrary and should be scaled to fit the available memory.')
     optional.add_argument('--loss', type=str, default='bce',
                         help="Loss function to be used during training. Available options are mae (mean absolute error), "
                              "mse(mean squared error), Dice, focal, and bce (binary cross-entropy). If mse/mae are chosen, the "
@@ -840,8 +790,6 @@ if __name__ == '__main__':
                         help='Negative to positive patch ratio, i.e. oversampling negative patches. Default is 1, '
                              'indicating equal number of positive and negative patches are used in training. Use >1 '
                              'to have more negative patches to keep false positives down.')
-    optional.add_argument('--patchoverlap', type=float, dest='PATCHOVERLAP', required=False, default=0.5,
-                        help='Maximum percentage of patch overlap allowed during patch sampling.')
     optional.add_argument('--withskull', action='store_true', default=False,
                           help='To check if the images are skullstripped or not. Default is False, i.e. skullstripped. '
                                'It is also an alternate way to stop re-scaling the default normalization based on contrast. '
@@ -900,7 +848,6 @@ if __name__ == '__main__':
            'loss': str(results.loss).lower(),
            'initmodel': results.INITMODEL,
            'oversample': results.OVERSAMPLE,
-           'patchoverlap': results.PATCHOVERLAP,
            }
 
     if opt['loss'].lower() == 'focal':
@@ -929,7 +876,6 @@ if __name__ == '__main__':
     print('Training loss       =', str(opt['loss']).upper())
     print('Initial Model       =', str(opt['initmodel']))
     print('Oversampling ratio  =', str(opt['oversample']))
-    print('Patch overlap ratio =', str(opt['patchoverlap']))
     if results.save > 0:
         print('Save every N epochs =', str(results.save))
     

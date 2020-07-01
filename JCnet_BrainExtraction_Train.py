@@ -18,6 +18,7 @@ from keras.layers import (AveragePooling2D, AveragePooling3D, Conv2D, Conv3D, Ma
                           Lambda, Conv2DTranspose, Conv3DTranspose, UpSampling3D, UpSampling2D, BatchNormalization, Activation, Add)
 from keras.optimizers import Adam
 from keras.layers.merge import add
+from keras.regularizers import l2
 from scipy import ndimage
 from keras.models import load_model
 import sys
@@ -286,7 +287,8 @@ def get_model_3d(kwargs):
     elif kwargs['model'] == 'vnet':
         final = Vnet3D(inputs, base_filters)
     elif kwargs['model'] == 'fpn':
-        f1, f2, f3, f4, _ = FPN3D(inputs, base_filters)
+        reg = 0.0001
+        f1, f2, f3, f4, _ = FPN3D(inputs, base_filters, reg)
     elif kwargs['model'] == 'densenet':
         final = DenseNet3D(inputs,base_filters)
     else:
@@ -306,18 +308,18 @@ def get_model_3d(kwargs):
             f4 = Activation('relu')(f4)
             f4 = UpSampling3D(size=(2, 2, 2), name='F4_U1')(f4)
             # U2
-            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f4)
+            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f4)
             f4 = BatchNormalization(axis=-1)(f4)
             f4 = Activation('relu')(f4)
             f4 = UpSampling3D(size=(2, 2, 2), name='F4_U2')(f4)
             # U3
-            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f4)
+            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f4)
             f4 = BatchNormalization(axis=-1)(f4)
             f4 = Activation('relu')(f4)
             f4 = UpSampling3D(size=(2, 2, 2), name='F4_U3')(f4)
 
             # Prepare
-            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f4)
+            f4 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f4)
             f4 = BatchNormalization(axis=-1)(f4)
             f4 = Activation('relu')(f4)
 
@@ -327,12 +329,12 @@ def get_model_3d(kwargs):
             f3 = Activation('relu')(f3)
             f3 = UpSampling3D(size=(2, 2, 2), name='F3_U1')(f3)
             # U2
-            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f3)
+            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f3)
             f3 = BatchNormalization(axis=-1)(f3)
             f3 = Activation('relu')(f3)
             f3 = UpSampling3D(size=(2, 2, 2), name='F3_U2')(f3)
             # Prepare
-            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f3)
+            f3 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f3)
             f3 = BatchNormalization(axis=-1)(f3)
             f3 = Activation('relu')(f3)
 
@@ -342,7 +344,7 @@ def get_model_3d(kwargs):
             f2 = Activation('relu')(f2)
             f2 = UpSampling3D(size=(2, 2, 2), name='F2_U1')(f2)
             # Prepare
-            f2 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1))(f2)
+            f2 = Conv3D(base_filters*4, (3, 3, 3), padding='same', strides=(1, 1, 1), kernel_regularizer=l2(reg))(f2)
             f2 = BatchNormalization(axis=-1)(f2)
             f2 = Activation('relu')(f2)
 
@@ -354,7 +356,7 @@ def get_model_3d(kwargs):
             f2 = Add()([f3, f2])
             f1 = Add()([f2, f1])
 
-            f1 = Conv3D(base_filters*4, (3, 3, 3),  padding='same', strides=(1,1,1))(f1)
+            f1 = Conv3D(base_filters*4, (3, 3, 3),  padding='same', strides=(1,1,1), kernel_regularizer=l2(reg))(f1)
             f1 = BatchNormalization(axis=-1)(f1)
             f1 = Activation('relu')(f1)
             final = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1), name='Level1')(f1)
@@ -588,7 +590,7 @@ def main(**kwargs):
                                          period=kwargs['period'], mode='max')] if kwargs['period'] > 0 else None
             dlr = ReduceLROnPlateau(monitor="val_acc", factor=0.5, patience=20,
                                     mode='max', verbose=1, cooldown=1, min_lr=1e-8)
-            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + 'logs')
+            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + '/logs')
             # earlystop = EarlyStopping(monitor='val_acc', min_delta=0.0001, patience=4,
                                       # verbose=1, mode='max')
         elif kwargs['loss'] == 'dice':
@@ -596,7 +598,7 @@ def main(**kwargs):
                                          period=kwargs['period'], mode='max')] if kwargs['period'] > 0 else None
             dlr = ReduceLROnPlateau(monitor="val_dice_coeff", factor=0.5, patience=20,
                                     mode='max', verbose=1, cooldown=1, min_lr=1e-8)
-            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + 'logs')
+            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + '/logs')
             # earlystop = EarlyStopping(monitor='val_dice_coeff', min_delta=0.0001, patience=4,
                                       # verbose=1, mode='max')
         else:
@@ -604,7 +606,7 @@ def main(**kwargs):
                                          period=kwargs['period'], mode='min')] if kwargs['period'] > 0 else None
             dlr = ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=20,
                                     mode='min', verbose=1, cooldown=1, min_lr=1e-8)
-            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + 'logs')
+            tensorboard = TensorBoard(log_dir=kwargs['outdir'] + '/logs')
             # earlystop = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=4,
                                       # verbose=1, mode='min')
 
@@ -846,7 +848,6 @@ if __name__ == '__main__':
            'loss': str(results.loss).lower(),
            'initmodel': results.INITMODEL,
            'oversample': results.OVERSAMPLE,
-           'patchoverlap': results.PATCHOVERLAP,
            }
 
     if opt['loss'].lower() == 'focal':
@@ -875,7 +876,6 @@ if __name__ == '__main__':
     print('Training loss       =', str(opt['loss']).upper())
     print('Initial Model       =', str(opt['initmodel']))
     print('Oversampling ratio  =', str(opt['oversample']))
-    print('Patch overlap ratio =', str(opt['patchoverlap']))
     if results.save > 0:
         print('Save every N epochs =', str(results.save))
     
