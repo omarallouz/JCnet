@@ -13,7 +13,7 @@ path = os.path.dirname(sys.argv[0])
 path=os.path.abspath(path)
 sys.path.append(path)
 
-# Most codes shamelessly copied from https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py
+# ResNet design methodology adopted from https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py
 
 def identity_block2D(input_tensor, kernel_size, filters, use_bias=True, train_bn=True):
     """The identity_block is the block that has no conv layer at shortcut
