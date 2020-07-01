@@ -4,7 +4,7 @@ This is a deep learning workflow for Progressive Multifocal Leukoencephalopathy 
 
 ![TNS Logo](/assets/tns.jpg)
 
-This work was conducted at the Translation Neuroradiology Section (TNS) of the National Institute of Neurological Disorders and Stroke (NINDS), in collaboration with colleagues at the National Institute of Mental Health, and Henry Jackson Foundation at the National Institutes of Health. This software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
+This work was conducted at the Neuroimmunology Clinic (NIC) and Translation Neuroradiology Section (TNS) of the National Institute of Neurological Disorders and Stroke (NINDS), in collaboration with colleagues at the National Institute of Mental Health, and the Henry Jackson Foundation at the National Institutes of Health. This software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
 
 If this repository is helpful for your research, please cite the following articles:
 *to be updated*
@@ -21,15 +21,15 @@ For the testing implementation, we fixed a previous bug with image padding for d
 
 ### Pre-processing:
 A few standard MRI preprocessing steps are necessary before training or testing a JCnet model:
-1. Bias field correction - can use either [N4 bias correction](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855/) or [MICO](https://www.sciencedirect.com/science/article/abs/pii/S0730725X14000927)
-2. Skull-stripping - we recommend using the [MONSTR skull-stripping algorithm](https://pubmed.ncbi.nlm.nih.gov/27864083/) in PML cases, which is publicly available and can be found [here](https://www.nitrc.org/projects/monstr)
-3. Transformation to the standard MNI-ICBM 152 atlas space, which is available for download [here](http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009)
-4. Co-registration of different MRI channels or contrasts (i.e. T1-weighted, fluid-attenuated inversion recovery, T2-weighted, and proton density images)
+1. Bias field correction - can use either [N4 bias correction](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3071855/) or [MICO](https://www.sciencedirect.com/science/article/abs/pii/S0730725X14000927).
+2. Skull-stripping - we recommend using the [MONSTR skull-stripping algorithm](https://pubmed.ncbi.nlm.nih.gov/27864083/) in PML cases, which is publicly available and can be found [here](https://www.nitrc.org/projects/monstr).
+3. Transformation to the standard MNI-ICBM 152 atlas space, which is available for download [here](http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009).
+4. Co-registration of different MRI channels or contrasts (i.e. T1-weighted, fluid-attenuated inversion recovery, T2-weighted, and proton density images).
 
 ### Hardware Requirements:
-1. Operating System: Linux
-2. CPU Number/Speed: we recommend using a processor with at least 8 cores, 2GHz speed, and multithreading capability
-3. RAM: 64+GB recommended (depending on the size of the training dataset and maximum number of training patches per subject)
+1. Operating System: Linux.
+2. CPU Number/Speed: we recommend using a processor with at least 8 cores, 2GHz speed, and multithreading capability.
+3. RAM: 64+GB recommended (depending on the size of the training dataset and maximum number of training patches per subject).
 4. GPU: recommend a dedicated graphics card with at least 8GB of VRAM (ex. NVIDIA RTX 2080 Ti, Titan X, or v100 models). If our current pre-trained models do not fit into GPU memory during testing, we recommend downscaling the network parameters (batch size, base filters, or patch size in this order). These models can be provided upon request.
 
 ### Software Requirements:
