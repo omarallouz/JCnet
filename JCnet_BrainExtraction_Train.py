@@ -286,7 +286,7 @@ def get_model_3d(kwargs):
         final = Unet3D(inputs, base_filters)
     elif kwargs['model'] == 'vnet':
         final = Vnet3D(inputs, base_filters)
-    elif kwargs['model'] == 'fpn':
+    elif kwargs['model'] == 'fpn' or kwargs['model'] == 'PanopticFPN':
         reg = 0.0001
         f1, f2, f3, f4, _ = FPN3D(inputs, base_filters, reg)
     elif kwargs['model'] == 'densenet':
@@ -294,14 +294,15 @@ def get_model_3d(kwargs):
     else:
         sys.exit('Model must be inception/unet/vnet/fpn.')
 
-    if kwargs['model'] != 'fpn':
+    if kwargs['model'] != 'fpn' or kwargs['model'] != 'PanopticFPN':
         if loss == 'bce'  or loss == 'dice' or loss == 'focal':
             final = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1))(final)
         else:
             final = Conv3D(1, (3, 3, 3), activation='relu', padding='same', strides=(1, 1, 1))(final)
         model = Model(inputs=inputs, outputs=final,name='some_unique_name')
     else:
-        if loss == 'bce'  or loss == 'dice' or loss == 'focal':
+        if kwargs['model'] == 'PanopticFPN' & (loss == 'bce'  or loss == 'dice' or loss == 'focal'):
+            # Generate the semantic segmentation branch of panoptic FPN on top of feature extraction backbone
             # Upsampling stages for F4
             # U1
             f4 = BatchNormalization(axis=-1)(f4)
@@ -361,6 +362,11 @@ def get_model_3d(kwargs):
             f1 = Activation('relu')(f1)
             final = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1), name='Level1')(f1)
 
+        elif kwargs['model'] == 'fpn' & (loss == 'bce' or loss == 'dice' or loss == 'focal'):
+            f1 = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1), name='Level1')(f1)
+            f2 = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1), name='Level2')(f2)
+            f3 = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1), name='Level3')(f3)
+            f4 = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same', strides=(1, 1, 1), name='Level4')(f4)
         else:
             f1 = Conv3D(1, (3, 3, 3), activation='relu', padding='same', strides=(1, 1, 1))(f1)
             f2 = Conv3D(1, (3, 3, 3), activation='relu', padding='same', strides=(1, 1, 1))(f2)
@@ -383,6 +389,7 @@ def main(**kwargs):
     padsize = np.max(np.array(kwargs['patchsize']) + 1) / 2
 
     subj_indx = range(kwargs['numatlas'])
+    # Generate an 80-20 validation split of the dataset at the atlas level
     val_split = int(np.floor(kwargs['numatlas'] * 0.2))
     train_split = (kwargs['numatlas'] - val_split)
     # Randomly sample vaildation cases
@@ -403,7 +410,7 @@ def main(**kwargs):
         maskname = check_nifti_filepath(kwargs['atlasdir'], ('atlas%d' % (i + 1)) + '_' + 'bmask')
         v += min(kwargs['max_patches'], nib.load(maskname).get_data().sum())
 
-    print('Total number of Bmask patches = ' + str(int(f)))
+    print('Total number of training Brain patches = ' + str(int(f)))
     loss = kwargs['loss']
     r = opt['oversample'] # ratio between positive and negative patches
     if kwargs['model'] != 'fpn':
@@ -719,7 +726,7 @@ def main(**kwargs):
         """
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='JCnet Brain Extraction Training')
+    parser = argparse.ArgumentParser(description='JCnet Brain Parenchymal Extraction Training')
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--atlasdir', required=True,
                         help='Directory containing atlas images. Images should be in NIFTI (.nii or .nii.gz) and be '
@@ -744,8 +751,8 @@ if __name__ == '__main__':
                              'and FLC corresponds to postcontrast T1 and FL. This is also used to normalize images. '
                              'See --withskull in optional arguments if the images have skull, because normalization '
                              'based on contrast does not work when images have skull.')
-    required.add_argument('--model', required=True, type=str, default='inception',
-                        help='Training model type, options are Inception, Unet, Vnet, Densenet, and FPN. ')
+    required.add_argument('--model', required=True, type=str, default='PanopticFPN',
+                        help='Training model type, options are Inception, Unet, Vnet, Densenet, FPN, and PanopticFPN. ')
     required.add_argument('--outdir', required=True, type=str,
                         help='Output directory where the trained models are written.')
     # Optional arguments
@@ -782,7 +789,7 @@ if __name__ == '__main__':
                         help="Loss function to be used during training. Available options are mae (mean absolute error), "
                              "mse(mean squared error), Dice, focal, and bce (binary cross-entropy). If mse/mae are chosen, the "
                              "binary brain masks are first blurred by a Gaussian to compute a membership. If model is "
-                             "FPN (feature pyramid networks), loss must be either Dice or BCE.")
+                             "FPN (feature pyramid networks), loss must be either be Dice, BCE, or focal.")
     optional.add_argument('--initmodel', type=str, dest='INITMODEL', required=False,
                         help='Existing pre-trained model. If provided, the weights from the pre-trained model will be '
                              'used to initiate the training.')
@@ -822,7 +829,7 @@ if __name__ == '__main__':
         sys.exit('Available loss options are MAE, MSE, Dice, Focal,  '
               'and BCE. You entered %s.' %(results.loss))
 
-    model = ['inception', 'unet', 'vnet', 'fpn', 'densenet']
+    model = ['inception', 'unet', 'vnet', 'fpn', 'PanopticFPN', 'densenet']
     if str(results.model).lower() not in model:
         sys.exit('Error: Available training model options are Inception, Unet, Densenet, and Vnet.  '
                  'You entered %s.' % (results.model))
