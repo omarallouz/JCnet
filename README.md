@@ -30,7 +30,7 @@ A few standard MRI preprocessing steps are necessary before training or testing 
 1. Operating System: Linux.
 2. CPU Number/Speed: we recommend using a processor with at least 8 cores, 2GHz speed, and multithreading capability.
 3. RAM: 64+GB recommended (depending on the size of the training dataset and maximum number of training patches per subject).
-4. GPU: recommend a dedicated graphics card with at least 8GB of VRAM (ex. NVIDIA RTX 2080 Ti, Titan X, or v100 models). If our current pre-trained models do not fit into GPU memory during testing, we recommend downscaling the network parameters (batch size, base filters, or patch size in this order). These models can be provided upon request.
+4. GPU: recommend a dedicated graphics card with at least 8GB of VRAM (ex. NVIDIA RTX 2080 Ti, Titan X, or v100 models). If our current pre-trained models do not fit into GPU memory during testing, we recommend downscaling the network parameters (base filters, patch size, or architechure in this order). These models can be provided upon request.
 
 ### Software Requirements:
 1. Python v3.6
