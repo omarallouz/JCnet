@@ -8,7 +8,8 @@ This work was conducted at the Neuroimmunology Clinic (NIC) and Translation Neur
 This work utilized the computational resources of the [NIH HPC Biowulf cluster](http://hpc.nih.gov), and the software is distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
 
 If this repository is helpful for your research, please cite the following articles:
-Al-Louzi O, Roy S, Osuorah I, et al. Progressive multifocal leukoencephalopathy lesion and brain parenchymal segmentation from MRI using serial deep convolutional neural networks. Neuroimage Clin. 2020;28:102499. doi:10.1016/j.nicl.2020.102499
+
+*Al-Louzi O, Roy S, Osuorah I, et al. Progressive multifocal leukoencephalopathy lesion and brain parenchymal segmentation from MRI using serial deep convolutional neural networks. Neuroimage Clin. 2020;28:102499. doi:10.1016/j.nicl.2020.102499*
 [https://www.sciencedirect.com/science/article/pii/S2213158220303363](https://www.sciencedirect.com/science/article/pii/S2213158220303363)
 
 ![JCnet](/assets/Figure-2.jpg)
